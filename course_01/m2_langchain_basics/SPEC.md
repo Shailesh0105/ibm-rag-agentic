@@ -84,7 +84,7 @@ Temperatures: 0 and 1 (the widest contrast Claude allows; Claude's range is 0–
 
 Row 21 checks that the model doesn't confuse a sequel with the original: Coppola is right either way, so only the year (1974, not 1972) catches the mistake. Rows 1–17 and 21 are scored for correctness.
 
-**Matching rules:** year = exact integer match. Director = expected surname appears in the output (case-insensitive). Genre is not scored (subjective); it only has to be a non-empty string or null.
+**Matching rules:** year = exact integer match. Director = expected surname appears in the output as a **whole word** (case-insensitive), with an optional trailing "s" so plurals match (e.g. "The Wachowskis" matches "Wachowski"; "Bongo" does not match "Bong"). Genre is not scored (subjective); it only has to be a non-empty string or null.
 
 **Exercise 2 model settings:** `claude-haiku-5-5`, temperature 0, `max_tokens` 1024.
 
@@ -97,6 +97,10 @@ Row 21 checks that the model doesn't confuse a sequel with the original: Coppola
 | year 1850 | invalid |
 | director "George Miller" vs expected "Miller" | `director_ok` True |
 | director "Frank Miller" vs expected "Miller" | `director_ok` True — documents a known **false pass** of the surname rule (see Section 10) |
+| director "Bongo Smith" vs expected "Bong" | `director_ok` False (whole-word rule) |
+| director "The Wachowskis" vs expected "Wachowski" | `director_ok` True (optional plural "s") |
+| `score_movie` on a `fake` row | raises `ValueError` |
+| `score_movie` on an `ambiguous` row | raises `ValueError` |
 
 ## 8. Failure handling
 - **Parse failure:** do not retry. Record it as a failure, keep the raw model output, and show it in the results table.
