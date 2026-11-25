@@ -60,7 +60,7 @@ From the Module 2 build ([full review notes](course_01/m2_langchain_basics/REVIE
 You need [uv](https://docs.astral.sh/uv/), an Anthropic API key (workspace-scoped) and, only for model comparisons, an OpenAI key.
 
 ```bash
-git clone <this repo>
+git clone https://github.com/Shailesh0105/ibm-rag-agentic.git
 cd ibm-rag-agentic
 uv sync                  # creates .venv with the exact versions in uv.lock
 cp .env.example .env     # then add your keys
