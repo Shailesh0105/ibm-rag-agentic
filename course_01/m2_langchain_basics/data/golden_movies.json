@@ -1,0 +1,23 @@
+[
+  {"id": 1, "movie": "The Matrix", "expected_director_surname": "Wachowski", "expected_year": 1999, "category": "scored", "note": null},
+  {"id": 2, "movie": "Inception", "expected_director_surname": "Nolan", "expected_year": 2010, "category": "scored", "note": null},
+  {"id": 3, "movie": "Parasite", "expected_director_surname": "Bong", "expected_year": 2019, "category": "scored", "note": null},
+  {"id": 4, "movie": "Titanic", "expected_director_surname": "Cameron", "expected_year": 1997, "category": "scored", "note": null},
+  {"id": 5, "movie": "Spirited Away", "expected_director_surname": "Miyazaki", "expected_year": 2001, "category": "scored", "note": null},
+  {"id": 6, "movie": "The Godfather", "expected_director_surname": "Coppola", "expected_year": 1972, "category": "scored", "note": null},
+  {"id": 7, "movie": "Pulp Fiction", "expected_director_surname": "Tarantino", "expected_year": 1994, "category": "scored", "note": null},
+  {"id": 8, "movie": "Jurassic Park", "expected_director_surname": "Spielberg", "expected_year": 1993, "category": "scored", "note": null},
+  {"id": 9, "movie": "The Shawshank Redemption", "expected_director_surname": "Darabont", "expected_year": 1994, "category": "scored", "note": null},
+  {"id": 10, "movie": "Get Out", "expected_director_surname": "Peele", "expected_year": 2017, "category": "scored", "note": null},
+  {"id": 11, "movie": "Amélie", "expected_director_surname": "Jeunet", "expected_year": 2001, "category": "scored", "note": null},
+  {"id": 12, "movie": "Mad Max: Fury Road", "expected_director_surname": "Miller", "expected_year": 2015, "category": "scored", "note": null},
+  {"id": 13, "movie": "The Dark Knight", "expected_director_surname": "Nolan", "expected_year": 2008, "category": "scored", "note": null},
+  {"id": 14, "movie": "Toy Story", "expected_director_surname": "Lasseter", "expected_year": 1995, "category": "scored", "note": null},
+  {"id": 15, "movie": "Everything Everywhere All at Once", "expected_director_surname": "Kwan", "expected_year": 2022, "category": "scored", "note": null},
+  {"id": 16, "movie": "Dangal", "expected_director_surname": "Tiwari", "expected_year": 2016, "category": "scored", "note": null},
+  {"id": 17, "movie": "3 Idiots", "expected_director_surname": "Hirani", "expected_year": 2009, "category": "scored", "note": null},
+  {"id": 18, "movie": "Crash", "expected_director_surname": null, "expected_year": null, "category": "ambiguous", "note": "ambiguous: 1996 Cronenberg / 2004 Haggis"},
+  {"id": 19, "movie": "Little Women", "expected_director_surname": null, "expected_year": null, "category": "ambiguous", "note": "ambiguous: 1994 Armstrong / 2019 Gerwig"},
+  {"id": 20, "movie": "The Glass Orchard of Mars", "expected_director_surname": null, "expected_year": null, "category": "fake", "note": "fake"},
+  {"id": 21, "movie": "The Godfather Part II", "expected_director_surname": "Coppola", "expected_year": 1974, "category": "scored", "note": "sequel"}
+]
