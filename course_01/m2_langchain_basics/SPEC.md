@@ -11,7 +11,7 @@ Rebuild IBM lab Exercises 1 and 2 with current LangChain (1.x) on my own machine
 Afterwards I should be able to explain: what temperature changes, why parseable ≠ schema-valid ≠ correct, and what my pass rates say (and don't say).
 
 ## 2. Scope
-- **In scope:** Exercise 1 (model × temperature comparison), Exercise 2 (JSON extraction with an eval over 20 movies), a short "IBM lab code vs current code" note.
+- **In scope:** Exercise 1 (model × temperature comparison), Exercise 2 (JSON extraction with an eval over 21 movies), a short "IBM lab code vs current code" note.
 - **Out of scope:** RAG, memory, chains, agents (later builds); any UI; retries to improve pass rates (we measure raw behaviour first).
 
 ## 3. Building blocks and data flow
@@ -23,30 +23,31 @@ Afterwards I should be able to explain: what temperature changes, why parseable 
 |---|---|---|
 | `run_prompt(model, temperature, prompt)` | model name, float, str | `{"text": str, "seconds": float}` |
 | `extract_movie(movie_name)` | `"The Matrix"` | raw text + parsed dict, e.g. `{"title": "The Matrix", "director": "Lana Wachowski, Lilly Wachowski", "year": 1999, "genre": "Science fiction"}`, or a recorded parse failure |
-| `validate_movie(d)` | parsed dict | `True/False` + reason (schema check) |
+| `validate_movie(d)` | parsed dict | `True/False` + reason (schema check: exactly the 4 keys `title`, `director`, `year`, `genre`; a 5th key is invalid; `year` must be a real int, not a string like `"1999"` and not a bool) |
 | `score_movie(d, golden)` | parsed dict + golden row | `director_ok`, `year_ok` (bools) |
 
-**Unknown values:** if the model doesn't know a movie, it must return `null` for unknown fields (the prompt must say this). Inventing values is a failure.
+**Unknown values:** if the model doesn't know a movie, it must return `null` for unknown fields (the prompt must say this). Inventing values is a failure. For the fake movie, `title` may echo the input.
 
 ## 5. Constraints
 - **Models:** Claude Haiku 5.5 (`claude-haiku-5-5`) for Exercise 2. Exercise 1 compares two models, so it uses Claude Haiku **and** OpenAI (`OPENAI_MODEL` from `.env`).
 - **Libraries:** `langchain-core`, `langchain-anthropic`, `langchain-openai` (1.x). No legacy classes (`WatsonxLLM`, `LLMChain`, `pydantic_v1`). Use plain `pydantic`.
 - **Keys:** from `.env` via python-dotenv only. Never printed.
-- **Budget:** Ex 1 = 3 prompts × 2 models × 2 temperatures × 3 runs = **36 calls**. Ex 2 = **20 calls** (+20 for the stretch goal). Max ~76 calls per full run (a few cents).
+- **Budget:** Ex 1 = 3 prompts × 2 models × 2 temperatures × 3 runs = **36 calls**. Ex 2 = **21 calls** (+21 for the stretch goal). Max ~78 calls per full run (a few cents).
 - **Format:** one Jupyter notebook for the exercises; results shown as tables (pandas allowed).
 
 ## 6. Success criteria (decided before building)
 **Exercise 1 — these are predictions to test, not pass/fail:**
-- P1: At temperature 0.1, the factual prompt gives identical output in ≥ 2 of 3 runs (per model).
-- P2: At temperature 0.9, the creative prompt gives 3 different outputs (per model).
+- P1: At temperature 0, the factual prompt gives identical output in ≥ 2 of 3 runs (per model).
+- P2: At temperature 1, the creative prompt gives 3 different outputs (per model).
 - Record per setting: number of distinct outputs (out of 3), average length (words), average latency.
 
 **Exercise 2 — pass/fail:**
-- Parse rate ≥ 19/20 (output turns into a dict).
-- Schema-valid rate ≥ 19/20 (all 4 keys present; `year` is an int between 1888 and 2026, or null; strings non-empty or null).
-- Correctness ≥ 15/17 on the unambiguous real movies (rows 1–17): director and year both match.
-- Fake movie (row 20): **no invented director or year** (all null). Pass/fail on its own; this is the hallucination check.
-- Ambiguous titles (rows 18–19): not scored; record which film the model chose and whether it flagged the ambiguity.
+- Parse rate ≥ 20/21 (output turns into a dict).
+- Schema-valid rate ≥ 20/21 (all 4 keys present; `year` is an int between 1888 and 2026, or null; strings non-empty or null).
+- Correctness ≥ 16/18 on the unambiguous real movies (rows 1–17 and 21): director and year both match.
+- Fake movie (row 20): **no invented director or year**. Pass = `director is None` AND `year is None`. `title` may echo the input. If `genre` is not null, record "partial invention" (this does not fail the test). Pass/fail on its own; this is the hallucination check.
+- Ambiguous titles (rows 18–19): not scored; record which film the model chose, inferred from the returned year/director. (The 4-key schema has no field for flagging ambiguity, so flagging is not measured.)
+- **Denominators:** if any API errors occur, show both counts, e.g. "19/20 (1 api_error)", i.e. out of the attempts that got a response, plus the api_error count.
 
 ## 7. Evals and test cases
 
@@ -54,7 +55,7 @@ Afterwards I should be able to explain: what temperature changes, why parseable 
 1. Creative: "Write a short poem about artificial intelligence."
 2. Factual: "What are the key components of a neural network?"
 3. Instruction-following: "List 5 tips for effective time management."
-Temperatures: 0.1 and 0.9. "Identical" = exact string match after stripping whitespace.
+Temperatures: 0 and 1 (the widest contrast Claude allows; Claude's range is 0–1). Note: temperature 0 is close to deterministic but not guaranteed identical. "Identical" = exact string match after stripping whitespace.
 
 **Exercise 2 golden set** (expected answers written by me, not by the AI):
 | # | Movie | Expected director (match on surname) | Expected year |
@@ -79,24 +80,40 @@ Temperatures: 0.1 and 0.9. "Identical" = exact string match after stripping whit
 | 18 | Crash *(ambiguous: 1996 Cronenberg / 2004 Haggis)* | not scored | not scored |
 | 19 | Little Women *(ambiguous: 1994 Armstrong / 2019 Gerwig)* | not scored | not scored |
 | 20 | The Glass Orchard of Mars *(fake)* | null | null |
+| 21 | The Godfather Part II *(sequel)* | Coppola | 1974 |
+
+Row 21 checks that the model doesn't confuse a sequel with the original: Coppola is right either way, so only the year (1974, not 1972) catches the mistake. Rows 1–17 and 21 are scored for correctness.
 
 **Matching rules:** year = exact integer match. Director = expected surname appears in the output (case-insensitive). Genre is not scored (subjective); it only has to be a non-empty string or null.
+
+**Exercise 2 model settings:** `claude-haiku-5-5`, temperature 0, `max_tokens` 1024.
+
+**Offline tests (no API calls)** for `validate_movie` and `score_movie`:
+| Input | Expected |
+|---|---|
+| `{"title":"X","director":"Y","year":"1999","genre":"Z"}` | invalid (year is a string) |
+| `{"title":"X","director":"Y","year":True,"genre":"Z"}` | invalid (year is a bool) |
+| valid 4 keys + a 5th key | invalid |
+| year 1850 | invalid |
+| director "George Miller" vs expected "Miller" | `director_ok` True |
+| director "Frank Miller" vs expected "Miller" | `director_ok` True — documents a known **false pass** of the surname rule (see Section 10) |
 
 ## 8. Failure handling
 - **Parse failure:** do not retry. Record it as a failure, keep the raw model output, and show it in the results table.
 - **API error** (timeout, rate limit): retry once, then record as `api_error` and continue with the next item. API errors are counted and reported separately, not mixed into the parse rate.
-- Nothing is skipped silently. Every one of the 20 movies and 36 Ex 1 calls appears in the results.
+- Nothing is skipped silently. Every one of the 21 movies and 36 Ex 1 calls appears in the results.
 - **If `OPENAI_MODEL` rejects the `temperature` parameter** (some newer models do): record that, run GPT at its default setting, and note it in the results. Don't remove GPT from the comparison silently.
 
 ## 9. Deliverables
-- `m2_exercises.ipynb`: Ex 1 and Ex 2, with results tables.
-- `data/golden_movies.json`: the golden table above, copied exactly.
-- `REVIEW_NOTES.md`: issues I caught when reviewing the AI-written code.
-- A final markdown cell in the notebook: results vs success criteria, what surprised me, and a 4-row "IBM lab code → current code" table.
+- `m2_exercises.ipynb`: Ex 1 and Ex 2, with results tables, plus the offline test cell from Section 7.
+- `data/golden_movies.json`: the golden table above, copied exactly. Each row: `{"id", "movie", "expected_director_surname", "expected_year", "category": "scored" | "ambiguous" | "fake", "note"}`; "not scored" cells and the fake movie's expected values are `null`.
+- `REVIEW_NOTES.md`: issues I caught when reviewing the AI-written code. Created with headings only; I fill it in.
+- A final markdown cell in the notebook: results vs success criteria, a placeholder for "What surprised me" (I write this), and a 4-row "IBM lab code → current code" table.
 
-**Stretch (only after the above works):** run Ex 2 a second way, with `ChatAnthropic(...).with_structured_output(Movie)` instead of prompt + JsonOutputParser, and compare parse/schema-valid rates.
+**Stretch (only after the above works):** run Ex 2 a second way, with `ChatAnthropic(...).with_structured_output(Movie)` instead of prompt + JsonOutputParser, and compare parse/schema-valid rates (apply the "fewer than 3 movies = inconclusive" rule from Section 10).
 
 ## 10. Open questions
 - Is exact string match too strict for "identical"? (A single changed comma counts as different.) Keep it for now and note the limitation.
 - Should a director match need the full name? Surname is a simpler first rule; are there films where it could give a false pass?
-- 20 movies is a small sample: what difference between two approaches would I actually trust?
+- ~~20 movies is a small sample: what difference between two approaches would I actually trust?~~
+  **My answer:** with ~20 movies, one movie is about 5 percentage points, and re-running the same approach can easily change one or two results by chance. So I won't trust a difference of only 1–2 movies. Rule for the stretch comparison: a difference of fewer than 3 movies is "inconclusive"; I'll also list exactly which movies changed result, and if it matters, re-run or grow the test set.
