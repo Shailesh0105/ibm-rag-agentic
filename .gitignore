@@ -9,3 +9,8 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+# macOS, Jupyter, personal tool settings
+.DS_Store
+.ipynb_checkpoints/
+.claude/settings.local.json

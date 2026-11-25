@@ -1,7 +1,7 @@
 [project]
 name = "ibm-rag-agentic"
 version = "0.1.0"
-description = "Add your description here"
+description = "Learning workspace for IBM's RAG and Agentic AI certificate, rebuilt with current tools"
 readme = "README.md"
 authors = [
     { name = "Shailesh0105", email = "Shaileshdwivedi0105@gmail.com" }
